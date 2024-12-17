@@ -1,0 +1,25 @@
+canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+#splash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(1, 0, 0, 0); /* Semi-transparent black background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999; /* Ensure it is above everything */
+}
+
+#countdown {
+  font-size: 12rem;
+  color: rgb(5, 122, 255);
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  text-align: center;
+}
