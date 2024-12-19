@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D 4 Player Ping Pong Game</title>
+    <title>3D Ping Pong Game</title>
     
     <!-- Three.js Core -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -16,6 +16,9 @@
 
     <!-- MTLLoader for loading material files (.mtl) -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js"></script>
+
+    <!-- GLTFLoader for loading .gltf and .glb files -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <!-- RoundedBoxGeometry (optional for geometry) -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/geometries/RoundedBoxGeometry.js"></script>
@@ -36,7 +39,7 @@
 <body>
     <div id="navbar-container"></div>
     <div id="splash">
-        <div id="countdown">3</div>
+        <div id="countdown"></div>
     </div>
     <canvas id="bg"></canvas>
 
