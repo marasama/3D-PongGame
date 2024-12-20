@@ -1,9 +1,5 @@
 // import * as THREE from 'three';  // Import Three.js library
 
-//const { element } = require("three/tsl");
-
-// import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
-
 const scene = new THREE.Scene();
 
 let leftScore = 0;
@@ -33,6 +29,12 @@ let rightScoreKeeper;
 let leftMixer;
 let rightMixer;
 
+
+let robot_dance;
+let robot_idle;
+let robot_spin;
+let robotAnimations;
+let leftScoreKeeperAnimations;
 gltfLoader.load('flying_robot.glb',
   function (gltf) {
     leftScoreKeeper = gltf.scene;
@@ -60,11 +62,14 @@ gltfLoader.load('flying_robot.glb',
     });
     leftScoreKeeper.scale.set(20, 20, 20);
     leftScoreKeeper.position.set(-20, 10, -30);
+    robot_dance = gltf.animations[6];
+    robotAnimations = gltf.animations;
     leftMixer = new THREE.AnimationMixer(leftScoreKeeper);
-    leftMixer.clipAction(gltf.animations[6]).play();
+    leftMixer.clipAction(gltf.animations[1]).play();
     scene.add(leftScoreKeeper);
   }
 );
+
 gltfLoader.load('flying_robot.glb',
   function (gltf) {
     rightScoreKeeper = gltf.scene;
@@ -79,21 +84,23 @@ gltfLoader.load('flying_robot.glb',
           || node.name === 'Object_11')
           return;
         const clonedMaterial = new THREE.MeshStandardMaterial({
-            map: originalMaterial.map,             
-            emissiveMap: originalMaterial.emissiveMap,
-            normalMap: originalMaterial.normalMap, 
-            color: originalMaterial.color,
-            emissive: originalMaterial.color.clone().multiplyScalar(0.08),
-            roughness: originalMaterial.roughness,
-            metalness: 0, 
-          });
+          map: originalMaterial.map,             
+          emissiveMap: originalMaterial.emissiveMap,
+          normalMap: originalMaterial.normalMap, 
+          color: originalMaterial.color,
+          emissive: originalMaterial.color.clone().multiplyScalar(0.08),
+          roughness: originalMaterial.roughness,
+          metalness: 0, 
+        });
         node.material = clonedMaterial;
       }
     });
     rightScoreKeeper.scale.set(20, 20, 20);
     rightScoreKeeper.position.set(20, 10, -30);
+    robot_dance = gltf.animations[6];
     rightMixer = new THREE.AnimationMixer(rightScoreKeeper);
-    rightMixer.clipAction(gltf.animations[6]).play();
+    rightMixer.clipAction(gltf.animations[1]).play();
+    console.log(gltf.animations);
     scene.add(rightScoreKeeper);
   }
 );
@@ -270,23 +277,20 @@ objLoader.load('arrow.obj', function(zort) {
     zort.scale.set(0.04, 0.04, 0.09);
     rightArrow = zort;
     rightArrow.position.y = 6;
-    rightArrow.rotation.y += (Math.PI * 180) / 180;
     zort.traverse(function (child) {
       if (child.isMesh) {
         child.material = new THREE.MeshStandardMaterial({
-          color: 0x03FC13, roughness: 0
+          color: 0xB310A5, roughness: 0
         });
       }
     });
     scene
     leftArrow = rightArrow.clone();
-    leftArrow.rotation.y -= (Math.PI * 90) / 180;
     leftArrow.position.y = 6;
-    leftArrow.position.x = 10;
     leftArrow.traverse(function (child) {
       if (child.isMesh) {
         child.material = new THREE.MeshStandardMaterial({
-          color: 0xB310A5, roughness: 0
+          color: 0x03FC13, roughness: 0
         });
       }
     });
@@ -330,7 +334,8 @@ function leftPlayerShoot()
   keepCheckLeft = 0;
   turnCheckRight = 1;
   turnCheckLeft = 0;
-  ballSpeedX = 1.5;
+  ballSpeedX = (leftArrow.position.x - ball.position.x) / 6;
+  ballSpeedZ = (leftArrow.position.z - ball.position.z) / 6;
   if (arrowAvailable)
   {
     scene.remove(leftArrow);
@@ -344,7 +349,9 @@ function rightPlayerShoot()
   keepCheckLeft = 0;
   turnCheckRight = 0;
   turnCheckLeft = 1;
-  ballSpeedX = -1.5;
+  console.log(rightArrow.position.x - ball.position.x);
+  ballSpeedX = (rightArrow.position.x - ball.position.x) / 6;
+  ballSpeedZ = (rightArrow.position.z - ball.position.z) / 6;
   console.log(true);
   if (arrowAvailable)
   {
@@ -354,55 +361,46 @@ function rightPlayerShoot()
 }
 
 function handlePlayerMovement() {
-  if (keys[68] && leftPlayer.position.z <= 14) {
-    leftPlayer.position.z += 0.5;
+  if (keys[68] && leftPlayer.position.z <= 17.75) {
+    leftPlayer.position.z += 0.9;
   }
-  if (keys[65] && leftPlayer.position.z >= -14) {
-    leftPlayer.position.z -= 0.5;
+  if (keys[65] && leftPlayer.position.z >= -17.75) {
+    leftPlayer.position.z -= 0.9;
   }
-  // Shoot 
   if (keys[38] && keepCheckRight) {
     rightPlayerShoot();
   }
   if (keys[87] && keepCheckLeft) {
     leftPlayerShoot();
   }
-  if (keys[37] && rightPlayer.position.z <= 14) {
-    rightPlayer.position.z += 0.5;
+  if (keys[37] && rightPlayer.position.z <= 17.75) {
+    rightPlayer.position.z += 0.9;
   }
-  if (keys[39] && rightPlayer.position.z >= -14) {
-    rightPlayer.position.z -= 0.5;
-  }
-  if (keys[74])
-  {
-    if (Math.abs(leftArrowAngle) > 1.2)
-      angleConst *= -1;
-    rotateAroundBall(leftArrow, leftArrowAngle);
-    leftArrowAngle += angleConst;
-  }
-  if (keys[75])
-  {
-    if (Math.abs(leftArrowAngle) > 1.2)
-      angleConst *= -1;
-    rotateAroundBall(leftArrow, leftArrowAngle);
-    leftArrowAngle += angleConst;
+  if (keys[39] && rightPlayer.position.z >= -17.75) {
+    rightPlayer.position.z -= 0.9;
   }
 }
 
 let score = 'none';
-let animation = 0;
+let counterFrameCount = 0;
+let robotAnimationCount = 0;
 
 function restartGame()
 {
   if (ball.position.x >= 39)
   {
+    leftMixer.clipAction(robotAnimations[3]).play();
     leftScore++;
     score = 'left';
   }
   else
   {
+    rightMixer.clipAction(robotAnimations[3]).play();
     rightScore++;
     score = 'right';
+  }
+  for (let key in keys) {
+    keys[key] = false;
   }
   timer = 1;
   countdownActive = true;
@@ -421,8 +419,20 @@ let arrowAvailable = false;
 
 function isHit()
 {
-  if ((ball.position.x > 36 || ball.position.x < -36) && (ball.position.z > 10 || ball.position.z < -10))
+  if (ball.position.x > 36 && (ball.position.z > 10 || ball.position.z < -10))
+  {
+    turnCheckLeft = 1;
+    turnCheckRight = 0;
+    keepCheckLeft = 0;
     return (1);
+  }
+  if (ball.position.x < -36 && (ball.position.z > 10 || ball.position.z < -10))
+  {
+    turnCheckLeft = 0;
+    turnCheckRight = 1;
+    keepCheckRight = 0;
+    return (1);
+  }
   if (ball.position.x < -32 && ball.position.z < leftPlayer.position.z + 3.75 && ball.position.z > leftPlayer.position.z - 3.75 && turnCheckLeft)
   {
     turnCheckLeft = 0;
@@ -437,7 +447,7 @@ function isHit()
     keepCheckLeft = 1;
     if (!arrowAvailable)
     {
-      scene.add(rightArrow);
+      scene.add(leftArrow);
       arrowAvailable = true;
     }
     return (3);
@@ -456,7 +466,7 @@ function isHit()
     keepCheckRight = 1;
     if (!arrowAvailable)
     {
-      scene.add(leftArrow);
+      scene.add(rightArrow);
       arrowAvailable = true;
     }
     return (2);
@@ -476,13 +486,21 @@ function moveBall()
     restartGame();
   else if (a === 3)
   {
-    ball.position.x = leftPlayer.position.x + 3;
+    ball.position.x = leftPlayer.position.x + 5;
     ball.position.z = leftPlayer.position.z;
+    if (Math.abs(leftArrowAngle) > 1.2)
+      angleConst *= -1;
+    rotateAroundBall(leftArrow, leftArrowAngle, 10);
+    leftArrowAngle += angleConst;
   }
   else if (a === 2)
   {
-    ball.position.x = rightPlayer.position.x - 3;
+    ball.position.x = rightPlayer.position.x - 5;
     ball.position.z = rightPlayer.position.z;
+    if (Math.abs(rightArrowAngle) > 1.2)
+      angleConst *= -1;
+    rotateAroundBall(rightArrow, rightArrowAngle, -10);
+    rightArrowAngle += angleConst;
   }
   else if (a === 1)
   {
@@ -494,9 +512,7 @@ function moveBall()
   ball.position.z += ballSpeedZ;
 }
 
-const radius = 10;
-
-function rotateAroundBall(obj, angle)
+function rotateAroundBall(obj, angle, radius)
 {
   const pivot = new THREE.Vector3(ball.position.x, ball.position.y, ball.position.z);
 
@@ -510,67 +526,70 @@ function rotateAroundBall(obj, angle)
 
 let leftArrowAngle = 0;
 let rightArrowAngle = 0;
-let angleConst = 0.1;
+let angleConst = 0.06;
 
-function moveArrow()
+function counterAnimation()
 {
-  if (keepCheckLeft)
+  if (score == 'left' && counterFrameCount <= 100 && leftCounterMixer)
   {
-    if (Math.abs(leftArrowAngle) > 5)
-      angleConst *= -1;
-    rotateAroundBall(leftArrow, leftArrowAngle);
-    leftArrowAngle += angleConst;
+    leftCounterMixer.update(0.01);
+    counterFrameCount++;
   }
-  else if (keepCheckRight)
+  else if (score == 'right' && counterFrameCount <= 100 && rightCounterMixer)
   {
-    if (Math.abs(rightArrowAngle) > 5)
-      angleConst *= -1;
-    rotateAroundBall(rightArrow, rightArrowAngle);
-    rightArrowAngle += angleConst;
+    rightCounterMixer.update(0.01);
+    counterFrameCount++;
   }
   else
   {
-    leftArrowAngle = 0;
-    rightArrowAngle = 0;
-    scene.remove(leftArrow);
-    scene.remove(rightArrow);
+    score = 'none'
+    counterFrameCount = 0;
   }
 }
 
 function animations()
 {
+  counterAnimation();
   if (leftMixer)
     leftMixer.update(0.01);
   if (rightMixer)
     rightMixer.update(0.01);
-  if (score == 'left' && animation <= 100 && leftCounterMixer)
-  {
-    leftCounterMixer.update(0.01);
-    animation++;
+}
+
+let isPaused = 0;
+
+document.getElementById("pauseButton").addEventListener("click", () => {
+  isPaused = !isPaused; // Toggle the pause state
+  if (isPaused) {
+    document.getElementById("pauseButton").textContent = "Resume";
+    pauseGame();
+  } else {
+    document.getElementById("pauseButton").textContent = "Pause";
+    resumeGame();
   }
-  else if (score == 'right' && animation <= 100 && rightCounterMixer)
-  {
-    rightCounterMixer.update(0.01);
-    animation++;
-  }
-  else
-  {
-    score = 'none'
-    animation = 0;
-  }
+});
+
+function pauseGame() {
+  cancelAnimationFrame(animate);
+}
+
+function resumeGame() {
+  animate();
 }
 
 function animate() {
-  animations();
-  requestAnimationFrame(animate);
-  if (!countdownActive)
+  if (!isPaused)
   {
-    moveArrow();
-    moveBall();
-    handlePlayerMovement();
-    controls.update(); // Silinecek
+    requestAnimationFrame(animate);
+    animations();
+    if (!countdownActive)
+    {
+      moveBall();
+      handlePlayerMovement();
+      controls.update();
+    }
+    renderer.render(scene, camera);
   }
-  renderer.render(scene, camera);
 }
 
 let countdownActive = true;
@@ -582,21 +601,23 @@ function startCountdown() {
   clearInterval(interval);
   ballSpeedX = getStartingSpeed();
   ballSpeedZ = getStartingSpeed();
-  countdown.textContent = timer; // Update the countdown text
-  document.getElementById('splash').style.display = 'flex';
+  countdown.textContent = timer;
+  document.getElementById('countdown').style.display = 'flex';
   interval = setInterval(() => {
-    countdown.textContent = timer; // Update the countdown text
+    countdown.textContent = timer;
     if (timer === 0)
         countdown.textContent = 'START';
     if (timer === -1)
     {
-      clearInterval(interval); // Stop the timer
-      document.getElementById('splash').style.display = 'none';
-      countdownActive = false; // Enable inputs after countdown
+      leftMixer.clipAction(robotAnimations[1]).play();
+      rightMixer.clipAction(robotAnimations[1]).play();
+      clearInterval(interval); 
+      document.getElementById('countdown').style.display = 'none';
+      countdownActive = false; 
     }
 
-    timer--; // Decrement the timer
-  }, 1000); // Run every 1 second
+    timer--;
+  }, 1000);
 }
 
 animate();

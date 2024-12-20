@@ -23,3 +23,25 @@ canvas {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   text-align: center;
 }
+
+#pauseButton {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: transparent;
+  color: whitesmoke;
+  border: 2px solid purple;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 1000; /* Ensure it appears on top */
+}
+
+#pauseButton:hover {
+  background-color: rgba(255, 255, 255, 0.2); /* Add a hover effect with slight transparency */
+}
+
+#pauseButton:active {
+  background-color: rgba(255, 255, 255, 0.5); /* Add an effect for active state */
+}
