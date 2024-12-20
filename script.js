@@ -174,14 +174,60 @@ const fieldMaterials = [
 ];
 
 const field = new THREE.Mesh(fieldGeometry, fieldMaterials);
-
+/* 
 const ballGeometry = new THREE.CylinderGeometry(2, 2, 1, 20, 32);
 
 const ballMaterial = new THREE.MeshStandardMaterial({ color: 0x654321, roughness: 0});
 
-const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+const ball = new THREE.Mesh(ballGeometry, ballMaterial); */
+const fireVertexShader = `
+uniform float time;
+varying vec2 vUv;
 
-ball.position.y = 3;
+float noise(vec2 p) {
+    return sin(p.x * 43758.5453 + p.y * 12345.6789);
+}
+
+void main() {
+    vUv = uv;
+
+    // Apply noise to the vertex position for turbulence
+    vec3 newPosition = position;
+    
+    // Add noise to the Y-axis to simulate flickering in the fire's shape
+    // newPosition.y += noise(uv * 10.0 + time * 2.0) * 0.4;
+
+    // Apply the transformation
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+}
+`;
+const fireFragmentShader = `
+uniform float time;
+varying vec2 vUv;
+
+void main() {
+    vec2 uv = vUv;
+    float brightness = sin(uv.y * 10.0 + time * 5.0) * 0.5 + 0.5;
+    float intensity = smoothstep(0.3, 1.0, brightness);
+
+    vec3 color = mix(vec3(1.0, 0.4, 0.1), vec3(1.0, 0.9, 0.9), intensity); // Fire gradient
+    gl_FragColor = vec4(color, 1.0);
+}
+`;
+
+const fireMaterial = new THREE.ShaderMaterial({
+    vertexShader: fireVertexShader,
+    fragmentShader: fireFragmentShader,
+    uniforms: {
+        time: { value: 0.0 },
+    },
+});
+
+const ballGeometry = new THREE.CylinderGeometry(2, 2, 1, 16, 1);
+const ball = new THREE.Mesh(ballGeometry, fireMaterial);
+ball.position.y = 6;
+
+scene.add(ball);
 
 function getStartingSpeed() {
   const range = Math.random() < 0.5 ? [0.2, 0.3] : [-0.3, -0.2];
@@ -253,7 +299,7 @@ objLoader.load('football_goal.obj', function(zort) {
   zort.rotation.set(0, Math.PI / 2, 0);
   zort.position.set(43, 0, 13.5);
   let colorIndex = 0;
-  const colors = [0x7E5CAD, 0xFF8000]; // Red, Green, Blue
+  const colors = [0x7E5CAD, 0xFF8000];
 
   zort.traverse(function (child) {
     if (child.isMesh) {
@@ -310,8 +356,6 @@ scene.add(rightPlayer);
 
 scene.add(leftPlayer);
 
-scene.add(ball);
-
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 
 const keys = {};
@@ -349,10 +393,8 @@ function rightPlayerShoot()
   keepCheckLeft = 0;
   turnCheckRight = 0;
   turnCheckLeft = 1;
-  console.log(rightArrow.position.x - ball.position.x);
   ballSpeedX = (rightArrow.position.x - ball.position.x) / 6;
   ballSpeedZ = (rightArrow.position.z - ball.position.z) / 6;
-  console.log(true);
   if (arrowAvailable)
   {
     scene.remove(rightArrow);
@@ -583,11 +625,12 @@ function animate() {
     requestAnimationFrame(animate);
     animations();
     if (!countdownActive)
-    {
-      moveBall();
-      handlePlayerMovement();
-      controls.update();
-    }
+      {
+        moveBall();
+        handlePlayerMovement();
+        controls.update();
+      }
+    fireMaterial.uniforms.time.value += 0.02;
     renderer.render(scene, camera);
   }
 }
